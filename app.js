@@ -28,6 +28,7 @@ cookie: {
 app.get('/', (req, res) => {
   res.send('Hello word!')
 })
+
 app.get('/login', async (req, res) => {
   const datos = req.query;
   try {
@@ -45,9 +46,10 @@ app.get('/login', async (req, res) => {
     console.log(fields); // fields contains extra meta data about results, if available
   } catch (err) {
     console.log(err);
+    res.status(500).send('error servidor')
      }
-
   })
+
   app.get('/validar', (req, res) => {
     if(req.session.usuario){
       res.status(200).send('sesion validada')
@@ -55,6 +57,28 @@ app.get('/login', async (req, res) => {
       res.status(401).send('No autorizado')
     }
    })
+
+   app.get('/registro', async (req, res) => {
+    const datos = req.query;
+    try {
+      const [results, fields] = await connection.query(
+        "INSERT INTO `usuarios` (`id`, `usuario`, `clave`) VALUES (NULL, ?, ?)",
+              
+          [datos.usuario, datos.clave]
+      );
+    if (results.affectedRows > 0){
+      req.session.usuario = datos.usuario;
+      res.status(200).send('Registro correcto')
+    }else{
+      res.status(401).send('No registrado')
+    }
+      console.log(results); // results contains rows returned by server
+      console.log(fields); // fields contains extra meta data about results, if available
+    } catch (err) {
+      console.log(err);
+      res.status(500).send('error servidor')
+       }
+    })
   app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
   })
